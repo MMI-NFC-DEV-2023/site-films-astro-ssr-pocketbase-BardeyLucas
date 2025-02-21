@@ -1,0 +1,31 @@
+---
+import { Debug } from "astro:components";
+import Layout from "../../layouts/Layout.astro";
+import type { FilmResponse, PersonnesResponse, RolesResponse } from "../../pocketbase-typegen";
+import LinkFilm from "../../components/LinkFilm.astro";
+export const prerender = false;
+
+type Reponse = FilmResponse<{Producteur:PersonnesResponse, Scenariste:PersonnesResponse[], Roles:RolesResponse<{acteur:PersonnesResponse}>[]}>;
+
+const ListFilm = await Astro.locals.pb.collection<Reponse>("Film").getFullList({expand: "Producteur, Scenariste, Roles.acteur"});
+---
+<Layout pageTitle="Liste des films">
+<pre>
+    <!-- <LinkFilm films={ListFilm}/> -->
+    {ListFilm.map(film => 
+        <div>
+            <h2>Film : {film.Title}</h2>
+            <p>Année de sortie : {film.Date_de_sortie}</p>
+            <p>Producteur : {film.expand?.Producteur.prenom} {film.expand?.Producteur.nom}</p>
+            <p>Scénariste : 
+                <ul>{film.expand?.Scenariste.map(s => <li>{s.prenom} {s.nom}</li>)}</ul>
+            </p>
+            <p>Scénariste : 
+                <ul>{film.expand?.Roles.map(r => <li><b>{r.Nom_role}</b>{r.expand?.acteur.prenom} {r.expand?.acteur.nom}</li>)}</ul>
+            </p>
+            <LinkFilm {...film}/>
+        </div>
+    )}
+    <Debug {ListFilm}/>
+</pre>
+</Layout>

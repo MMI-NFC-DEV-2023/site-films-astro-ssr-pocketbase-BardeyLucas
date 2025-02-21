@@ -1,0 +1,34 @@
+---
+import type {
+  FilmResponse,
+  PersonnesResponse,
+  RolesResponse,
+} from "../../pocketbase-typegen";
+
+export const prerender = false;
+const id = Astro.params.id;
+
+
+const film = await Astro.locals.pb
+  .collection<
+    FilmResponse<{
+      producteur?: PersonnesResponse;
+      scenaristes?: PersonnesResponse[];
+      role?: RolesResponse<{ acteur: PersonnesResponse }>[];
+    }>
+  >("films")
+  .getOne(id!, { expand: "producteur, scenaristes, role.acteur" });
+---
+
+<!-- Affichage d'un seul film -->
+<div>
+        <h2>Film : {film.Title}</h2>
+        <p>Année de sortie : {film.Date_de_sortie}</p>
+        {  film.expand?.producteur &&      <p>Producteur : {film.expand?.producteur.nom}</p>}        
+        {film.expand?.scenaristes && <p>Scénaristes : {film.expand?.scenaristes.map(s => (<span>{s.nom + ", "}</span>))}</p>}
+        { film.expand?.role &&  <p>Les roles : 
+            {film.expand?.role.map(r => 
+            <span>Nom du role : {r.Nom_role + ", "}</span> 
+            <span>Joué par : {r.expand?.acteur.nom +", "}</span>)}</p>
+        }
+</div>

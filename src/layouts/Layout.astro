@@ -8,7 +8,7 @@ const { pageTitle } = Astro.props;
 
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" x-data="{menuOpen: false}">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
@@ -17,6 +17,12 @@ const { pageTitle } = Astro.props;
 		<title>{pageTitle}</title>
 	</head>
 	<body>
-		<slot />
+		<button aria-controls="menuOpen" :aria-expanded="menuOpen" @click="menuOpen = !menuOpen" >Menu</button>
+		<nav :aria-hidden="!menuOpen" x-show="!menuOpen">
+			<a href="/">Home</a>
+			<a href="/personne">Liste des personnes</a>
+			<a href="/films">Liste des films</a>
+		</nav>
+		<slot/>
 	</body>
 </html>

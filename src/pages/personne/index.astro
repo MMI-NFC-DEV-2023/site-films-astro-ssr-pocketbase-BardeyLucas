@@ -1,10 +1,24 @@
 ---
 import { Debug } from "astro:components";
 import Layout from "../../layouts/Layout.astro";
+import type { FilmResponse, PersonnesResponse } from "../../pocketbase-typegen";
+import LinkPersonne from "../../components/LinkPersonne.astro";
 export const prerender = false;
-
-const ListPersonnes = await Astro.locals.pb.collection("Personnes").getFullList();
+type Reponse = PersonnesResponse<{Film_via_Producteur:FilmResponse[]}>;
+const ListPersonnes = await Astro.locals.pb.collection<Reponse>("Personnes").getFullList({expand: "Film_via_Producteur[]"});
 ---
+<Layout pageTitle="Liste des Personnes">
+    {ListPersonnes.map(personne => 
+        <div>
+            <h2>{personne.prenom} {personne.nom}</h2>
+            <p>Année de naissance : {personne.date_naissance}</p>
+            <p>Films en tant que producteur : 
+                <ul>{personne.expand?.Film_via_Producteur.map(f => <li>{f.Title}</li>)}</ul>
+            </p>
+        </div>
+    )}
+    {ListPersonnes.map(personne => <LinkPersonne {...personne} />)}
 <pre>
-    <Debug>{ListPersonnes}</Debug>
+    <Debug {ListPersonnes}/>
 </pre>
+</Layout>
