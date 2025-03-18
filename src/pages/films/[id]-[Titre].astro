@@ -1,13 +1,15 @@
 ---
+import LinkPersonne from "../../components/LinkPersonne.astro";
+import Layout from "../../layouts/Layout.astro";
 import type {
   FilmResponse,
   PersonnesResponse,
   RolesResponse,
 } from "../../pocketbase-typegen";
+import IdFilm from "./ajoutRole/[idFilm].astro";
 
 export const prerender = false;
 const id = Astro.params.id;
-
 
 const film = await Astro.locals.pb
   .collection<
@@ -21,14 +23,22 @@ const film = await Astro.locals.pb
 ---
 
 <!-- Affichage d'un seul film -->
-<div>
-        <h2>Film : {film.Title}</h2>
-        <p>Année de sortie : {film.Date_de_sortie}</p>
-        {  film.expand?.producteur &&      <p>Producteur : {film.expand?.producteur.nom}</p>}        
-        {film.expand?.scenaristes && <p>Scénaristes : {film.expand?.scenaristes.map(s => (<span>{s.nom + ", "}</span>))}</p>}
-        { film.expand?.role &&  <p>Les roles : 
-            {film.expand?.role.map(r => 
-            <span>Nom du role : {r.Nom_role + ", "}</span> 
-            <span>Joué par : {r.expand?.acteur.nom +", "}</span>)}</p>
-        }
-</div>
+<Layout pageTitle={`film : ${film.Title}`}>
+   {
+    Astro.locals.pb.authStore.isValid && (
+      <a href={`/films/edit/${film.id}`}>Edit</a>
+    )
+  }
+  <div>
+          <h2>Film : {film.Title}</h2>
+          <p>Année de sortie : {film.Date_de_sortie}</p>
+          {  film.expand?.producteur &&      <p>Producteur : <LinkPersonne {...film.expand?.producteur!}/></p>}
+          {film.expand?.scenaristes && <p>Scénaristes : {film.expand?.scenaristes.map(s => (<LinkPersonne {...s}/>))}</p>}
+          { film.expand?.role &&  <p>Les roles /
+              {film.expand?.role.map(r =>
+              <span>Nom du role : {r.Nom_role + ", "} <a href={`/films/SupprRole/${id}-${r.id}`} class="text-red-500">Supprimer le role</a></span>
+              <span>Joué par : <LinkPersonne {...r.expand?.acteur!} /> </span>)}</p>
+          }
+          <a href={`/films/ajoutRole/${id}`}>Ajouter un rôle</a>
+  </div>
+</Layout>

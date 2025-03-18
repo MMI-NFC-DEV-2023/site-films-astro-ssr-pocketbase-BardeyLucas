@@ -1,0 +1,21 @@
+---
+export const prerender = false
+const { idFilm, idRole } = Astro.params;
+const role = await Astro.locals.pb.collection("Roles").getOne(idRole!);
+const film = await Astro.locals.pb.collection("Film").getOne(idFilm!);
+if (Astro.request.method === "POST") {
+  const role = await Astro.locals.pb.collection("Roles").delete(idRole!);
+  const film = await Astro.locals.pb.collection("Film").update(idFilm!, {
+   '-role': idRole
+  });
+
+    return Astro.redirect(`/films/${idFilm}-${encodeURIComponent(film.Title)}`);
+  }
+
+
+---
+
+<form method="POST">
+  <p>Dans le film {film.Title} </p>
+  <button>Supprimer le role {role.Nom_role}</button>
+</form>

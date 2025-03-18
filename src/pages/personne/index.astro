@@ -15,6 +15,7 @@ const ListPersonnes = await Astro.locals.pb.collection<Reponse>("Personnes").get
             <p>Films en tant que producteur : 
                 <ul>{personne.expand?.Film_via_Producteur.map(f => <li>{f.Title}</li>)}</ul>
             </p>
+            {Astro.locals.pb.authStore.isValid && <a href={`/personne/edit/${personne.id}`}>Edit</a>}
         </div>
     )}
     {ListPersonnes.map(personne => <LinkPersonne {...personne} />)}

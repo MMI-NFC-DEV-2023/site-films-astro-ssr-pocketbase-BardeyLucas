@@ -1,0 +1,68 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { PersonnesNationaliteOptions, PersonnesMetiersOptions } from "../../../pocketbase-typegen";
+export const prerender = false;
+const pb  = Astro.locals.pb;
+if(Astro.request.method === "POST"){
+    const data = await Astro.request.formData();
+    const personne = await pb.collection("Personnes").create(data)
+    return Astro.redirect(`/personne/${personne.id}-${personne.nom}`);
+}
+---
+<Layout pageTitle="Edit Personne">
+    <h1>Edit personne</h1>
+    <form class="*:content grid grid-cols-2" method="post">
+        <label>Nationalite</label>
+        <select name="Nationalite">
+            <option>US</option>
+            <option>FR</option>
+            <option>UK</option>
+            <option>CA</option>
+        </select>
+
+        <label>Date de naissance
+            <input type="date" name="date_naissance">
+        </label>
+        <label>Lieu de naissance
+            <input type="text" name="Lieu_de_naissance">
+        </label>
+
+        <label>Date de décès
+            <input type="date" name="date_deces">
+        </label>
+        <label>Lieu de décès
+            <input type="text" name="Lieu_de_deces">
+        </label>
+
+        <label>
+            Nom
+            <input type="text" name="nom" />
+          </label>
+          <label>
+            Prenom
+            <input type="text" name="prenom" />
+          </label>
+      
+          <label>
+            nationalite
+            <select name="Nationalite">
+              {
+                Object.entries(PersonnesNationaliteOptions    ).map(([key, value]) => (
+                  <option value={key}>{value}</option>
+                ))
+              }
+            </select>
+          </label>
+          <label>
+            Profession
+            <select name="Metiers" multiple>
+              {
+                Object.entries(PersonnesMetiersOptions).map(([key, value]) => (
+                  <option value={key}>{value}</option>
+                ))
+              }
+            </select>
+            <button>Envoyer</button>
+          </label>    
+        </form>
+</Layout>

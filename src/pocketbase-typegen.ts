@@ -58,8 +58,16 @@ export enum PersonnesNationaliteOptions {
 	"UK" = "UK",
 	"CA" = "CA",
 }
+
+export enum PersonnesMetiersOptions {
+	"Son" = "Son",
+	"Lumière" = "Lumière",
+	"Remplissage" = "Remplissage",
+}
 export type PersonnesRecord = {
+	Lieu_de_deces?: string
 	Lieu_de_naissance?: string
+	Metiers?: PersonnesMetiersOptions
 	Nationalite?: PersonnesNationaliteOptions
 	Roles?: RecordIdString[]
 	created?: IsoDateString

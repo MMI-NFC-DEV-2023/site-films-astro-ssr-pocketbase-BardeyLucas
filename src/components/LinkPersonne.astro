@@ -7,6 +7,6 @@ import type { PersonnesResponse } from '../pocketbase-typegen';
 type Props = PersonnesResponse;
 const personne = Astro.props
 ---
-<a href={`/personnes/${personne.id}-${slugger.slug(personne.nom)}`}
+<a href={`/personne/${personne.id}-${slugger.slug(personne.nom)}`}
   >{personne.prenom + " " + personne.nom}</a
 >

@@ -1,0 +1,105 @@
+---
+import type { ClientResponseError } from "pocketbase";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmResponse } from "../../../pocketbase-typegen";
+import { formatDate } from "../../../utilitaires";
+export const prerender = false;
+const pb = Astro.locals.pb;
+let film = {} as FilmResponse;
+const id = Astro.params.id;
+let message;
+if (id) {
+  film = await pb
+    .collection("Film")
+    .getOne(id)
+    .catch((error) => {
+      console.error("erreur à la recup du film", id, error);
+      message = (error as ClientResponseError).message;
+      return {} as FilmResponse;
+    });
+}
+
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+
+  const film = await (
+    id
+      ? pb.collection("Film").update(id, data)
+      : pb.collection("Film").create(data)
+  ).catch((error) => {
+    console.error("erreur à la sauvegarde du film", id, error);
+    message = (error as ClientResponseError).message;
+  });
+  if (film) {
+    return Astro.redirect(
+      `/films/${film.id}-${encodeURIComponent(film.Title)}`
+    );
+  }
+}
+
+const personnes = await pb.collection("personnes").getFullList();
+---
+
+<Layout pageTitle="Edit de film">
+  {message && <p class="text-red-500">Erreur : {message}</p>}
+
+  <form class="*:contents grid grid-cols-2" method="POST">
+    <input type="hidden" name="id" value={film.id} />
+    <label>
+      Titre
+      <input required type="text" name="titre" value={film.Title} />
+    </label>
+    <label>
+      Date de sortie
+      <input
+        type="date"
+        name="dateSortie"
+        value={formatDate(film.Date_de_sortie)}
+      />
+    </label>
+    <label>
+      Langue
+      <input type="text" name="langue" value={film.Langue} />
+    </label>
+    <label>
+      Producteur
+      <select name="producteur">
+        <!-- <option value="720527e4grhrr5w">Harry Potter</option>
+        <option value="q00u4xevq1fz05l">Leonardo Di Caprio</option> -->
+        {
+          personnes.map((personne) => (
+            <option
+              selected={personne.id === film.Producteur}
+              value={personne.id}
+            >
+              {personne.nom}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <label>
+      Scénariste.s
+      <div>
+        {
+          personnes.map((personne) => (
+            <label>
+              <input
+                checked={film.Scenariste.includes(personne.id)}
+                type="checkbox"
+                name="scenaristes"
+                value={personne.id}
+              />
+              {personne.nom}
+            </label>
+          ))
+        }
+      </div>
+    </label>
+    <label>
+      Synopsis
+      <input type="text" name="synopsis" value={film.Scenariste} />
+    </label>
+    <button>{id ? "Modifier" : "Ajouter"}</button>
+  </form>
+</Layout>
